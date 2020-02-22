@@ -56,4 +56,4 @@ This processes the input file `<eps-in-file>` and transforms all tags to corresp
 
 # License
 
-adoverpic is released under the [XXX](YYY) license. 
+adoverpic is released under the [MIT](https://opensource.org/licenses/MIT) license. 
