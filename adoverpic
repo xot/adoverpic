@@ -47,7 +47,7 @@ import sys, os, string, re
 # with \
 # In other words: any line that starts with '% \' and at least one more non
 # whitespace character is considered to contain a LaTeX command
-command_re = re.compile (r'% (\\[^ \n]+)')
+command_re = re.compile (r'% \.([^ \n]+)')
 
 # The coordinates are on a separate line following the command,
 # as two real numbers (\ie can contain a dot) separated by a signle space
@@ -80,7 +80,7 @@ def processcommand(command,epsinf,overpicoutf):
         ycoord = match.group(2)
         # write out the overpic command with the found coordinates
         overpicoutf.write('\put(' + str(xcoord) + ',' + str(ycoord) + ')'
-                          + '{' + command + '}\n')
+                          + '{\\' + command + '}\n')
         # and get the next line to process 
         line = epsinf.readline()
     else:
@@ -118,16 +118,21 @@ epsinfile = sys.argv[1]
 epsoutfile = sys.argv[2]
 overpicoutfile = sys.argv[3]
 
-# Check arguments
-if os.path.samefile(epsinfile, epsoutfile):
-    error('Input and output files must be different: '
-           + epsinfile + ' = ' + epsoutfile)
-if os.path.samefile(epsinfile, overpicoutfile):
-    error('Input and output files must be different: '
-           + epsinfile + ' = ' + overpicoutfile)
-if os.path.samefile(epsoutfile, overpicoutfile):
-    error('Output files must be different: '
-           + epsoutfile + ' = ' + overpicoutfile)
+# Check arguments to see if they refer to the same file
+
+try:
+    if os.path.samefile(epsinfile, epsoutfile):
+        error('Input and output files must be different: '
+              + epsinfile + ' = ' + epsoutfile)
+    if os.path.samefile(epsinfile, overpicoutfile):
+        error('Input and output files must be different: '
+              + epsinfile + ' = ' + overpicoutfile)
+    if os.path.samefile(epsoutfile, overpicoutfile):
+        error('Output files must be different: '
+              + epsoutfile + ' = ' + overpicoutfile)
+except FileNotFoundError as e:
+    # do nothing; this is fine
+    pass
     
 # open the files
 try:
