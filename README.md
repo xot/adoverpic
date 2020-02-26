@@ -27,7 +27,7 @@ Affinity Designer, when exporting a figure in encapsulated postscript (using EPS
 	1.13 3.727 2.331 3.727 2.331 3.727 c
  
 where the first line (`1.13 2.525 m`) specifies the coordinates of the start of
-the string, i.e. the dot (in units that correspond to LateX's `pt`).
+the string, i.e. the dot (in units that almost (!) correspond to LateX's `pt`).
 
 # Adoverpic
 
@@ -53,14 +53,16 @@ Run adoverpic as follows:
 This processes the input file `<eps-in-file>` and transforms all tags to corresponding overpic commands written to `<overpic-out-file>`. The filtered output is stored in  `<eps-out-file>`. Adoverpic output is typically used as follows within a LaTeX document:
 
 	\begin{figure}
-	  \begin{overpic}[abs,unit=1pt,scale=0.996]{<eps-out-file>} 
+	  \begin{overpic}[abs,unit=1pt,scale=0.9963]{<eps-out-file>} 
 	  ... <definitions> ...
 	  \input{<overpic-out-file>
 	  \end{overpic}
     \end{figure}
 
-Here the scaling factor is used to compensate fro a small discrepancy
-(apparently) between the units used by Encapsulated Postscript and LaTeX.
+Here the scaling factor is used to compensate for a small discrepancy
+between the units used by Encapsulated Postscript and LaTeX. In Encapsulated
+Postscript, there are [72 points to an inch](https://en.wikipedia.org/wiki/PostScript#Units_of_length)
+whereas TeX/LaTex have 72.27 points to an inch (The TeXbook, page 57).
 
 # License
 
