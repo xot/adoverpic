@@ -47,12 +47,16 @@ import sys, os, string, re
 # with \
 # In other words: any line that starts with '% \' and at least one more non
 # whitespace character is considered to contain a LaTeX command
-command_re = re.compile (r'% \.([^ \n]+)')
+COMMAND_RE = re.compile (r'% \.([^ \n]+)')
 
 # The coordinates are on a separate line following the command,
 # as two real numbers (\ie can contain a dot) separated by a signle space
 # (and followed by ' m', but we don't check that)
-coord_re = re.compile (r'([0-9\.]+) ([0-9\.]+)') 
+COORD_RE = re.compile (r'([0-9\.]+) ([0-9\.]+)') 
+
+# EPS pts are not exactly LaTeX points
+# EPS pt: 1 in = 72 pt; LaTeX point: 1 in = 72.27 pt;
+EPSPTS_TO_LATEXPTS = 1.00375
 
 def usage ():
     print("Usage: adoverpic <eps-in-file> <eps-out-file> <overpic-out-file>")
@@ -61,6 +65,14 @@ def error (msg):
     sys.stderr.write("adoverpic: error: %s\n" % msg)
     sys.exit (1)
 
+# test if two fileanmes point to the same file
+# (os.path.samefile throws exceptions for non-existing files)
+def samefile(file1,file2):
+    try:
+        return os.path.samefile(file1,file2)
+    except FileNotFoundError as e:
+        return False
+    
 # skip to the end of the curves used to render the LaTeX command string
 # (this is either a line with one single space, or, if it is the last
 # thing to be rendered in the .eps file, a line with 'grestore')
@@ -74,10 +86,13 @@ def skipcurves(line,epsinf):
 def processcommand(command,epsinf,overpicoutf):
     # get the coordinates from the next line
     line = epsinf.readline() 
-    match = coord_re.search(line)
+    match = COORD_RE.search(line)
     if match:
         xcoord = match.group(1)
         ycoord = match.group(2)
+        # convert to LaTeX points
+        xcoord = float(xcoord) * EPSPTS_TO_LATEXPTS
+        ycoord = float(ycoord) * EPSPTS_TO_LATEXPTS        
         # write out the overpic command with the found coordinates
         overpicoutf.write('\put(' + str(xcoord) + ',' + str(ycoord) + ')'
                           + '{\\' + command + '}\n')
@@ -94,7 +109,7 @@ def processfile(epsinf,epsoutf,overpicoutf):
     # repeat until EOF, encoded as empty string; non-empty string is true
     while line: 
         # determine whether the line matches a LaTeX command
-        match = command_re.search(line)
+        match = COMMAND_RE.search(line)
         if match:
             # if the line contains a command, process it
             command = match.group(1)
@@ -119,20 +134,15 @@ epsoutfile = sys.argv[2]
 overpicoutfile = sys.argv[3]
 
 # Check arguments to see if they refer to the same file
-
-try:
-    if os.path.samefile(epsinfile, epsoutfile):
-        error('Input and output files must be different: '
-              + epsinfile + ' = ' + epsoutfile)
-    if os.path.samefile(epsinfile, overpicoutfile):
-        error('Input and output files must be different: '
-              + epsinfile + ' = ' + overpicoutfile)
-    if os.path.samefile(epsoutfile, overpicoutfile):
-        error('Output files must be different: '
-              + epsoutfile + ' = ' + overpicoutfile)
-except FileNotFoundError as e:
-    # do nothing; this is fine
-    pass
+if samefile(epsinfile, epsoutfile):
+    error('Input and output files must be different: '
+          + epsinfile + ' = ' + epsoutfile)
+if samefile(epsinfile, overpicoutfile):
+    error('Input and output files must be different: '
+          + epsinfile + ' = ' + overpicoutfile)
+if samefile(epsoutfile, overpicoutfile):
+    error('Output files must be different: '
+          + epsoutfile + ' = ' + overpicoutfile)
     
 # open the files
 try:
