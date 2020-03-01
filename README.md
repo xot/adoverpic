@@ -63,6 +63,13 @@ This processes the input file `<eps-in-file>` and transforms all tags to corresp
 	  \end{overpic}
     \end{figure}
 
+# Comptibility
+
+Tested with the following version(s) of Affinity Designer
+
+- 1.7.3
+- 1.8.1
+
 
 # License
 
