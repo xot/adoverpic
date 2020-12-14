@@ -49,6 +49,12 @@ import sys, os, string, re
 # whitespace character is considered to contain a LaTeX command
 COMMAND_RE = re.compile (r'% \.([^ \n]+)')
 
+
+# The end of the the curves used to render the LaTeX command string
+# (this is either an empty line (with spaces), or, if it is the last
+# thing to be rendered in the .eps file, a line with 'grestore')
+ENDOFCURVES_RE = re.compile (r'^ *\n|^ grestore\n')
+
 # The coordinates are on a separate line following the command,
 # as two real numbers (\ie can contain a dot) separated by a signle space
 # (and followed by ' m', but we don't check that)
@@ -74,10 +80,9 @@ def samefile(file1,file2):
         return False
     
 # skip to the end of the curves used to render the LaTeX command string
-# (this is either a line with one single space, or, if it is the last
-# thing to be rendered in the .eps file, a line with 'grestore')
+# see ENDOFCURVES_RE
 def skipcurves(line,epsinf):
-    while (line and (line != ' \n') and (line != ' grestore\n')):
+    while (line and not ENDOFCURVES_RE.search(line)):
         line = epsinf.readline()
     return line   
 
